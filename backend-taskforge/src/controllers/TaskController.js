@@ -5,7 +5,7 @@ const { handleControllerError, isNonEmptyString } = require("../utils/http");
 const taskStatuses = ["todo", "in-progress", "review", "done"];
 
 const isProjectMember = (project, userId) =>
-  project && project.members.some((member) => String(member._id || member) === string(userId));
+  project && project.members.some((member) => String(member._id || member) === String(userId));
 
 exports.createTask = async (req, res) => {
   try {

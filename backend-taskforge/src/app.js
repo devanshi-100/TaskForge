@@ -9,8 +9,22 @@ const taskRoutes = require("./routes/task");
 
 const app = express();
 
+const configuredOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:3002")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || "http://localhost:3002",
+  origin: (origin, callback) => {
+    const isLocalDevelopment = process.env.NODE_ENV !== "production" &&
+      /^http:\/\/localhost:\d+$/.test(origin || "");
+
+    if (!origin || configuredOrigins.includes(origin) || isLocalDevelopment) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Origin is not allowed by CORS"));
+  },
   credentials: true
 }));
 
