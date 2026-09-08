@@ -18,9 +18,14 @@ const AppLayout = () => {
 
   useEffect(() => {
     authApi.getProfile()
-      .then((data) => setProfile(data.user || data.profile || null))
-      .catch((requestError) => console.warn("Unable to load profile:", requestError.message));
-  }, []);
+      .then((data) => {
+        setProfile(data.user || data.profile || null);
+      })
+      .catch((requestError) => {
+        console.warn("Unable to load profile:", requestError.message);
+        navigate("/login", { replace: true });
+      });
+  }, [navigate]);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
