@@ -1,12 +1,12 @@
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 const { handleControllerError, isNonEmptyString } = require("../utils/http");
+const { syncProjectCompletionStatus } = require("../utils/projectStatus");
 
 const taskStatuses = ["todo", "in-progress", "review", "done"];
 
 const isProjectMember = (project, userId) =>
   project && project.members.some((member) => String(member._id || member) === String(userId));
-
 exports.createTask = async (req, res) => {
   try {
     const { title, description, projectId, assignedTo, dueDate, priority, status, labels } = req.body;
@@ -41,6 +41,13 @@ exports.createTask = async (req, res) => {
       status,
       labels
     });
+
+    if (task.status === "done") {
+      task.completedAt = new Date();
+      await task.save();
+    }
+
+    await syncProjectCompletionStatus(project._id);
 
     res.status(201).json({ message: "Task created", task });
   } catch (error) {
@@ -151,6 +158,7 @@ exports.updateTask = async (req, res) => {
     }
 
     await task.save();
+    await syncProjectCompletionStatus(project._id);
     await task.populate("assignedTo", "name email");
 
     res.json({ message: "Task updated", task });
@@ -187,6 +195,7 @@ exports.updateTaskStatus = async (req, res) => {
     task.completedAt = status === "done" ? new Date() : undefined;
 
     await task.save();
+    await syncProjectCompletionStatus(project._id);
 
     res.json({ message: "Task status updated", task });
   } catch (error) {
@@ -294,6 +303,7 @@ exports.deleteTask = async (req, res) => {
     }
 
     await task.deleteOne();
+    await syncProjectCompletionStatus(project._id);
 
     res.json({ message: "Task deleted" });
   } catch (error) {

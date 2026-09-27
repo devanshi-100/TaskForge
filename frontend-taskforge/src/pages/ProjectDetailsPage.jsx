@@ -38,6 +38,7 @@ const ProjectDetailsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingTaskId, setDeletingTaskId] = useState(null);
   const [isUpdatingMembers, setIsUpdatingMembers] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const navigate = useNavigate();
   const isProjectOwner = Boolean(profile?.id && project?.owner?._id && String(profile.id) === String(project.owner._id));
   const projectMemberIds = new Set((project?.members || []).map((member) => String(member._id)));
@@ -151,6 +152,19 @@ const ProjectDetailsPage = () => {
     }
   };
 
+  const handleProjectStatusChange = async (event) => {
+    setIsUpdatingStatus(true);
+    setError("");
+    try {
+      const data = await projectApi.update(projectId, { status: event.target.value });
+      setProject((current) => ({ ...current, status: data.project.status }));
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -159,6 +173,27 @@ const ProjectDetailsPage = () => {
         action={<div className="flex items-center gap-2"><button type="button" onClick={() => setIsModalOpen(true)}>+ Add task</button>{isProjectOwner && <button className="icon-button" type="button" title="Delete project" aria-label="Delete project" onClick={handleDeleteProject} disabled={isDeleting}><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="24" height="24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M10 4h4l1 3H9l1-3Zm-4 3 1 13h10l1-13M10 11v5m4-5v5" /></svg></button>}</div>}
       />
       {error && <div className="form-error mb-6" role="alert">{error}</div>}
+      {!isLoading && project && (
+        <section className="card mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="m-0 text-base">Project status</h2>
+            <p className="mb-0 mt-1 text-sm text-slate-500">Completion is automatic. Pause or resume work when needed.</p>
+          </div>
+          {isProjectOwner ? (
+            <select
+              aria-label="Project status"
+              disabled={isUpdatingStatus}
+              value={project.status === "on-hold" ? "on-hold" : "active"}
+              onChange={handleProjectStatusChange}
+            >
+              <option value="active">Active / automatic</option>
+              <option value="on-hold">On hold</option>
+            </select>
+          ) : (
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold capitalize text-slate-600">{project.status}</span>
+          )}
+        </section>
+      )}
       {isLoading ? (
         <section className="board" aria-label="Loading project board">
           {columns.map((column) => <div className="kanban-column kanban-skeleton" key={column.id} />)}

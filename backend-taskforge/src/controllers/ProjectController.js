@@ -2,6 +2,7 @@ const Project = require("../models/Project");
 const Workspace = require("../models/Workspace");
 const Task = require("../models/Task");
 const { handleControllerError, isNonEmptyString } = require("../utils/http");
+const { syncProjectCompletionStatus } = require("../utils/projectStatus");
 
 const isWorkspaceMember = (workspace, userId) =>
   workspace.owner.toString() === userId ||
@@ -54,14 +55,45 @@ exports.createProject = async (req, res) => {
 
 exports.getProjects = async (req, res) => {
   try {
-    const { workspaceId, status } = req.query;
+    const { workspaceId, status, activity } = req.query;
     const query = { members: req.auth.id };
 
     if (workspaceId) {
       query.workspace = workspaceId;
     }
 
-    if (status) {
+    // Reconcile older projects before applying the status filter. This makes a
+    // project with already-completed tasks appear in the Completed filter too.
+    const visibleProjects = await Project.find(query).select("_id");
+    await Promise.all(
+      visibleProjects.map((project) => syncProjectCompletionStatus(project._id))
+    );
+
+    if (activity === "inactive") {
+      const inactiveSince = new Date();
+      inactiveSince.setDate(inactiveSince.getDate() - 7);
+      const projectsWithActivity = await Project.find(query).select("_id status updatedAt");
+      const activityByProject = await Task.aggregate([
+        { $match: { project: { $in: visibleProjects.map((project) => project._id) } } },
+        { $group: { _id: "$project", lastUpdatedAt: { $max: "$updatedAt" } } },
+      ]);
+      const latestTaskUpdate = new Map(
+        activityByProject.map((project) => [String(project._id), project.lastUpdatedAt])
+      );
+      const inactiveProjectIds = projectsWithActivity
+        .filter((project) => {
+          const taskUpdatedAt = latestTaskUpdate.get(String(project._id));
+          if (!taskUpdatedAt || project.status === "completed") return false;
+
+          const latestUpdate = new Date(
+            Math.max(new Date(project.updatedAt).getTime(), new Date(taskUpdatedAt).getTime())
+          );
+          return latestUpdate < inactiveSince;
+        })
+        .map((project) => project._id);
+
+      query._id = { $in: inactiveProjectIds };
+    } else if (status) {
       query.status = status;
     }
 
@@ -92,6 +124,9 @@ exports.getProject = async (req, res) => {
       return res.status(403).json({ message: "You are not a member of this project" });
     }
 
+    const syncedProject = await syncProjectCompletionStatus(project._id);
+    project.status = syncedProject.status;
+
     res.json({ project });
   } catch (error) {
     handleControllerError(res, error);
@@ -110,16 +145,26 @@ exports.updateProject = async (req, res) => {
       return res.status(403).json({ message: "Only the project owner can update this project" });
     }
 
-    const allowedUpdates = ["name", "description", "status", "priority", "dueDate"];
+    const allowedUpdates = ["name", "description", "priority", "dueDate"];
     allowedUpdates.forEach((field) => {
       if (req.body[field] !== undefined) {
         project[field] = req.body[field];
       }
     });
 
-    await project.save();
+    if (req.body.status !== undefined) {
+      if (!["on-hold", "active"].includes(req.body.status)) {
+        return res.status(400).json({ message: "Projects can only be manually put on hold or resumed" });
+      }
+      project.status = req.body.status;
+    }
 
-    res.json({ message: "Project updated", project });
+    await project.save();
+    const syncedProject = req.body.status === "active"
+      ? await syncProjectCompletionStatus(project._id)
+      : project;
+
+    res.json({ message: "Project updated", project: syncedProject });
   } catch (error) {
     handleControllerError(res, error);
   }

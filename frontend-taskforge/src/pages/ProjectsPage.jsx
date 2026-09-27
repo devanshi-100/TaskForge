@@ -27,7 +27,7 @@ const ProjectsPage = () => {
     const loadProjects = async () => {
       try {
         const [projectData, workspaceData] = await Promise.all([
-          projectApi.get(status ? { status } : {}),
+          projectApi.get(status === "inactive" ? { activity: "inactive" } : status ? { status } : {}),
           workspaceApi.getMine(),
         ]);
         const availableWorkspaces = workspaceData.workspaces || [];
@@ -119,7 +119,7 @@ const ProjectsPage = () => {
           {projects.length} project{projects.length === 1 ? "" : "s"}
         </p>
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-          Status
+          Project filter
           <select
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
             value={status}
@@ -133,6 +133,7 @@ const ProjectsPage = () => {
             <option value="active">Active</option>
             <option value="on-hold">On hold</option>
             <option value="completed">Completed</option>
+            <option value="inactive">Inactive (no task updates in 7+ days)</option>
           </select>
         </label>
       </div>

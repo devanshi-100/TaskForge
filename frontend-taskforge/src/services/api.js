@@ -56,6 +56,7 @@ export const projectApi = {
     const params = new URLSearchParams();
     if (filters.workspaceId) params.set("workspaceId", filters.workspaceId);
     if (filters.status) params.set("status", filters.status);
+    if (filters.activity) params.set("activity", filters.activity);
     const query = params.toString();
     return request(`/projects/${query ? `?${query}` : ""}`);
   },
