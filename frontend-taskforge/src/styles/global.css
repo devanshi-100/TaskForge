@@ -115,6 +115,10 @@
   .task-info-heading { @apply mb-3 block text-sm font-bold text-slate-800; }
   .task-info p { @apply m-0 border-t border-slate-200 py-2 text-sm text-slate-500; }
   .task-info p strong { @apply text-slate-700; }
+  .task-guidance { @apply mt-6 grid gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4; }
+  .task-guidance h2 { @apply m-0 text-base font-bold text-indigo-950; }
+  .task-guidance p { @apply mb-0 mt-1 text-sm text-slate-600; }
+  .task-guidance-output { @apply m-0 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg bg-white/80 p-3 font-sans text-sm leading-6 text-slate-700; }
   .comments-panel h2 { @apply mb-5 mt-0 text-xl font-bold; }
   .comment-card { @apply rounded-xl border border-slate-200 bg-slate-50 p-4; }
   .comment-meta { @apply flex items-center justify-between gap-4 text-sm; }
@@ -202,6 +206,16 @@ html[data-theme="dark"] .task-count,
 html[data-theme="dark"] .workspace-mark,
 html[data-theme="dark"] .bg-indigo-100 {
   background-color: #312e81 !important;
+}
+
+html[data-theme="dark"] .task-guidance {
+  background-color: #1e1b4b !important;
+  border-color: #4338ca !important;
+}
+
+html[data-theme="dark"] .task-guidance-output {
+  background-color: #0f172a !important;
+  color: #cbd5e1 !important;
 }
 
 @media (max-width: 767px) {

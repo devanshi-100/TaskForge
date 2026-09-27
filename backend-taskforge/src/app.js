@@ -6,6 +6,7 @@ const AuthRoutes = require("./routes/auth");
 const workspaceRoutes = require("./routes/workspace");
 const projectRoutes = require("./routes/project");
 const taskRoutes = require("./routes/task");
+const assistantRoutes = require("./routes/assistant");
 
 const app = express();
 
@@ -39,5 +40,6 @@ app.use( "/api/auth", AuthRoutes);
 app.use( "/api/workspace", workspaceRoutes );
 app.use( "/api/projects", projectRoutes );
 app.use( "/api/tasks", taskRoutes );
+app.use( "/api/assistant", assistantRoutes );
 
 module.exports = app;

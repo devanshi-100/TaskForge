@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import PageHeader from "../components/ui/PageHeader";
-import { taskApi } from "../services/api";
+import { assistantApi, taskApi } from "../services/api";
 
 const statusOptions = [
   { value: "todo", label: "To do" },
@@ -40,10 +40,13 @@ const TaskDetailsPage = () => {
   const [success, setSuccess] = useState("");
   const [commentText, setCommentText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [guidance, setGuidance] = useState("");
+  const [isGuidanceLoading, setIsGuidanceLoading] = useState(false);
   const navigate = useNavigate();
 
   const assigneeOptions = useMemo(() => task?.project?.members || [], [task?.project?.members]);
   const isProjectOwner = Boolean(profile?.id && task?.project?.owner && String(profile.id) === String(task.project.owner));
+  const isTaskAssignee = Boolean(profile?.id && task?.assignedTo?._id && String(profile.id) === String(task.assignedTo._id));
 
   useEffect(() => {
     const loadTask = async () => {
@@ -125,6 +128,19 @@ const TaskDetailsPage = () => {
     } catch (requestError) {
       setError(requestError.message);
       setIsDeleting(false);
+    }
+  };
+
+  const handleGetGuidance = async () => {
+    setIsGuidanceLoading(true);
+    setError("");
+    try {
+      const data = await assistantApi.getTaskGuidance(taskId);
+      setGuidance(data.guidance);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setIsGuidanceLoading(false);
     }
   };
 
@@ -260,6 +276,18 @@ const TaskDetailsPage = () => {
               {isSaving ? "Saving..." : "Save changes"}
             </button>
           </form>
+          {isTaskAssignee && task.status !== "done" && (
+            <section className="task-guidance">
+              <div>
+                <h2>AI task guide</h2>
+                <p>Get a clear summary and next steps for completing this task before its due date.</p>
+              </div>
+              <button type="button" onClick={handleGetGuidance} disabled={isGuidanceLoading}>
+                {isGuidanceLoading ? "Preparing guide..." : guidance ? "Refresh guide" : "Get task guide"}
+              </button>
+              {guidance && <pre className="task-guidance-output">{guidance}</pre>}
+            </section>
+          )}
         </article>
 
         <article className="card comments-panel">

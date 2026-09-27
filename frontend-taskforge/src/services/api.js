@@ -110,3 +110,9 @@ export const taskApi = {
     method: "DELETE"
   })
 };
+
+export const assistantApi = {
+  getTaskGuidance: (taskId) => request(`/assistant/tasks/${taskId}/guidance`, {
+    method: "POST"
+  })
+};
