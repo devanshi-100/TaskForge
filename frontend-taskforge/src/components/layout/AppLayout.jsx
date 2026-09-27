@@ -15,6 +15,15 @@ const AppLayout = () => {
   const [profile, setProfile] = useState(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState("");
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("taskforge-theme");
+    return savedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("taskforge-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     authApi.getProfile()
@@ -53,6 +62,15 @@ const AppLayout = () => {
           ))}
         </nav>
         <div className="sidebar-footer">
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            onClick={() => setTheme((current) => current === "dark" ? "light" : "dark")}
+          >
+            <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
           <div className="sidebar-user">
             <img className="user-avatar" src={userDefaultLogo} alt="Default user avatar" />
             <span><strong>{displayName}</strong><small>{profile?.email || "Signed in"}</small></span>

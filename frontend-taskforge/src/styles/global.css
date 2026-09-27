@@ -25,6 +25,8 @@
   .sidebar-error { @apply m-0 text-xs text-rose-300; }
   .user-avatar { @apply size-9 shrink-0 rounded-full bg-indigo-100 object-cover; }
   .sidebar-signout { @apply w-fit; }
+  .theme-toggle { @apply flex w-full items-center gap-2 rounded-lg bg-white/10 px-3 py-2.5 text-left text-sm font-semibold text-slate-200 hover:bg-white/20; }
+  .theme-toggle span { @apply grid size-5 place-items-center text-base; }
   .main-content { @apply mx-auto w-full max-w-7xl p-5 md:p-10; }
   .page-header { @apply mb-8 flex items-start justify-between gap-4; }
   .page-header h1 { @apply m-0 text-3xl font-bold tracking-tight md:text-4xl; }
@@ -126,6 +128,80 @@
   .auth-card button:disabled { @apply cursor-wait opacity-60; }
   .form-error { @apply rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700; }
   .form-success { @apply rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700; }
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+  background: #0b1120;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .sidebar {
+  background: #080d1a;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .task-card,
+html[data-theme="dark"] .task-modal,
+html[data-theme="dark"] .auth-card,
+html[data-theme="dark"] .bg-white {
+  background-color: #182236 !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .bg-slate-50,
+html[data-theme="dark"] .bg-slate-100,
+html[data-theme="dark"] .kanban-column,
+html[data-theme="dark"] .task-info,
+html[data-theme="dark"] .comment-card {
+  background-color: #111a2b !important;
+  border-color: #334155 !important;
+}
+
+html[data-theme="dark"] .border-slate-200,
+html[data-theme="dark"] .border-slate-300,
+html[data-theme="dark"] .border-dashed {
+  border-color: #475569 !important;
+}
+
+html[data-theme="dark"] .text-slate-900,
+html[data-theme="dark"] .text-slate-800,
+html[data-theme="dark"] .text-slate-700,
+html[data-theme="dark"] .text-slate-600,
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3 {
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .text-slate-500,
+html[data-theme="dark"] .text-slate-400,
+html[data-theme="dark"] .page-header p,
+html[data-theme="dark"] .task-card p,
+html[data-theme="dark"] .comment-card p {
+  color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #0f172a !important;
+  border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .recent-item:hover,
+html[data-theme="dark"] .workspace-item:hover {
+  background-color: #243047 !important;
+}
+
+html[data-theme="dark"] .task-count,
+html[data-theme="dark"] .workspace-mark,
+html[data-theme="dark"] .bg-indigo-100 {
+  background-color: #312e81 !important;
 }
 
 @media (max-width: 767px) {
